@@ -432,6 +432,112 @@ class Themes {
 		.fs {
 			'.(static::$fillChats?('color: '.static::color('!chat_list_selected_folder').';') : '') .'
 		}
+		.login-container {
+			max-width: 480px;
+			margin: 0 auto;
+			padding: 20px;
+			text-align: center;
+		}
+		.login-header {
+			margin-bottom: 30px;
+		}
+		.login-header h1 {
+			font-size: 2.5em;
+			margin-bottom: 10px;
+			background: linear-gradient(45deg, #2196F3, #00BCD4);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			display: inline-block;
+		}
+		.login-subtitle {
+			color: '.static::color('!chat_list_text').';
+			margin-bottom: 20px;
+		}
+		.login-box {
+			background: '.(static::$theme == 0 ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)').';
+			border-radius: 12px;
+			padding: 30px;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			margin-bottom: 20px;
+		}
+		.login-methods {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+		}
+		.login-form {
+			display: flex;
+			flex-direction: column;
+			gap: 15px;
+		}
+		.login-input {
+			padding: 12px;
+			border-radius: 8px;
+			border: 1px solid '.static::color('!chat_list_border').';
+			font-size: 16px;
+			width: 100%;
+			box-sizing: border-box;
+		}
+		.login-button, .qr-button {
+			background: linear-gradient(45deg, #2196F3, #00BCD4);
+			color: white;
+			border: none;
+			padding: 12px 24px;
+			border-radius: 8px;
+			font-size: 16px;
+			cursor: pointer;
+			transition: transform 0.2s;
+		}
+		.login-button:hover, .qr-button:hover {
+			transform: translateY(-2px);
+		}
+		.qr-button {
+			display: inline-block;
+			text-decoration: none;
+		}
+		.login-error {
+			color: '.static::color('!red_text').';
+			margin: 10px 0;
+		}
+		.login-footer {
+			margin-top: 20px;
+		}
+		.login-footer a {
+			margin: 0 10px;
+			color: '.static::color('!message_link').';
+		}
+		.qr-section {
+			text-align: center;
+			margin: 20px 0;
+		}
+		.qr-code {
+			max-width: 200px;
+			border-radius: 12px;
+			margin-bottom: 15px;
+		}
+		.qr-text {
+			color: '.static::color('!chat_list_text').';
+			margin-bottom: 15px;
+		}
+		.qr-divider {
+			color: '.static::color('!chat_list_text').';
+			margin: 20px 0;
+			position: relative;
+		}
+		.qr-divider:before, .qr-divider:after {
+			content: "";
+			position: absolute;
+			top: 50%;
+			width: 45%;
+			height: 1px;
+			background: '.static::color('!chat_list_border').';
+		}
+		.qr-divider:before {
+			left: 0;
+		}
+		.qr-divider:after {
+			right: 0;
+		}
 		--></style>';
 	}
 }

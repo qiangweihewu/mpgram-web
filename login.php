@@ -31,6 +31,49 @@ set_error_handler('exceptions_error_handler');
 include 'themes.php';
 Themes::setTheme($theme);
 
+function showQRLogin() {
+	global $lng, $post;
+	echo '<div class="qr-section">';
+	echo '<img src="qrcode.php" alt="QR Code" class="qr-code">';
+	echo '<p class="qr-text">'.MP::x($lng['scan_qr']).'</p>';
+	echo '<div class="qr-divider">'.MP::x($lng['or']).'</div>';
+	echo '</div>';
+}
+
+function htmlStart() {
+	if (defined('HTML_STARTED')) return;
+	define('HTML_STARTED', 1);
+	global $lng;
+	header("Content-Type: text/html; charset=".MP::$enc);
+	echo '<html><head><title>'.MP::x($lng['login']).'</title>';
+	echo '<link rel="icon" type="image/x-icon" href="favicon.ico">';
+	echo Themes::head();
+	// определение часового пояса
+	$iev = MP::getIEVersion();
+	if($iev == 0 || $iev > 4) {
+		$dtz = new DateTimeZone(date_default_timezone_get());
+		$t = new DateTime('now', $dtz);
+		$tof = $dtz->getOffset($t);
+		echo '<script type="text/javascript"><!--
+try {
+	var d = new Date();
+	var c = ((d.getTime()+'.($tof*1000).')-(d.getTime()-(d.getTimezoneOffset()*60*1000)))/1000 | 0;
+	var e = new Date();
+	e.setTime(e.getTime() + (365*86400*1000));
+	document.cookie = "timeoff=" + c + "; expires="+e.toUTCString()+"; path=/";
+} catch (e) {
+}
+//--></script>';
+	}
+	echo '</head>';
+	echo Themes::bodyStart();
+	echo '<div class="login-container">';
+	echo '<div class="login-header">';
+	echo '<h1>MPGram Web</h1>';
+	echo '<p class="login-subtitle">'.MP::x($lng['welcome_text']).'</p>';
+	echo '</div>';
+}
+
 $revoked = isset($_GET['revoked']);
 $logout = false;
 $wrong = isset($_GET['wrong']);
@@ -46,6 +89,7 @@ $ipass = $_GET['ipass'] ?? $_POST['ipass'] ?? null;
 
 // Check session existance
 $nouser = $user == null || $user === false || empty($user) || strlen($user) < 32 || strlen($user) > 200 || !file_exists(sessionspath.$user.'.madeline');
+
 function removeSession($logout=false) {
 	global $user;
 	$_SESSION = [];
@@ -74,35 +118,6 @@ function removeSession($logout=false) {
 	}
 }
 
-function htmlStart() {
-	if (defined('HTML_STARTED')) return;
-	define('HTML_STARTED', 1);
-	global $lng;
-	header("Content-Type: text/html; charset=".MP::$enc);
-	echo '<html><head><title>'.MP::x($lng['login']).'</title>';
-	echo Themes::head();
-	// определение часового пояса
-	$iev = MP::getIEVersion();
-	if($iev == 0 || $iev > 4) {
-		$dtz = new DateTimeZone(date_default_timezone_get());
-		$t = new DateTime('now', $dtz);
-		$tof = $dtz->getOffset($t);
-		echo '<script type="text/javascript"><!--
-try {
-	var d = new Date();
-	var c = ((d.getTime()+'.($tof*1000).')-(d.getTime()-(d.getTimezoneOffset()*60*1000)))/1000 | 0;
-	var e = new Date();
-	e.setTime(e.getTime() + (365*86400*1000));
-	document.cookie = "timeoff=" + c + "; expires="+e.toUTCString()+"; path=/";
-} catch (e) {
-}
-//--></script>';
-	}
-	echo '</head>';
-	echo Themes::bodyStart('style="margin:5px"');
-	echo '<h1>MPGram Web</h1>';
-}
-
 if(isset($_GET['logout']) || $revoked || $wrong) {
 	$logout = true;
 	$nouser = true;
@@ -126,6 +141,43 @@ if($user != null && !$logout && !$nouser) {
 		if($phone === null) {
 			unset($MP);
 			removeSession();
+			htmlStart();
+			echo '<div class="login-box">';
+			if($revoked) {
+				echo '<div class="login-error">'.MP::x($lng['session_expired']).'</div>';
+			}
+			echo '<div class="login-methods">';
+			echo '<div class="phone-login">';
+			echo '<h2>'.MP::x($lng['phone_number']).'</h2>';
+			echo '<form action="login.php"';
+			if($post) echo ' method="post"';
+			echo ' class="login-form">';
+			echo '<input type="text" class="login-input" placeholder="+1234567890" name="phone">';
+			if($ipass !== null)
+				echo '<input type="hidden" name="ipass" value="'.$ipass.'">';
+			echo '<button type="submit" class="login-button">'.MP::x($lng['continue']).'</button>';
+			echo '</form>';
+			echo '</div>';
+			
+			echo '<div class="qr-login">';
+			echo '<h2>'.MP::x($lng['qr_login']).'</h2>';
+			echo '<a href="qrlogin.php" class="qr-button">'.MP::x($lng['scan_qr']).'</a>';
+			echo '</div>';
+			echo '</div>';
+			
+			if($wrong) {
+				echo '<div class="login-error">'.MP::x($lng['wrong_number_format']).'</div>';
+			}
+			echo '</div>';
+			
+			echo '<div class="login-footer">';
+			echo '<a href="about.php">'.MP::x($lng['about']).'</a>';
+			echo ' <a href="login.php?lang=en">English</a>';
+			echo ' <a href="login.php?lang=ru">'.MP::x('Русский').'</a>';
+			echo '</div>';
+			echo '</div>';
+			echo Themes::bodyEnd();
+			die;
 		}
 	}
 }
@@ -206,7 +258,7 @@ if($phone !== null) {
 		}
 	}
 	if(!isset($user) || $nouser) {
-		$SESSION['user'] = $user = rtrim(strtr(base64_encode(hash('sha384', sha1(md5($phone.rand(0,1000).random_bytes(6))).random_bytes(30), true)), '+/', '-_'), '=');
+		$_SESSION['user'] = $user = rtrim(strtr(base64_encode(hash('sha384', sha1(md5($phone.rand(0,1000).random_bytes(6))).random_bytes(30), true)), '+/', '-_'), '=');
 		MP::cookie('user', $user, time() + (86400 * 365));
 		$MP = MP::getMadelineAPI($user, true);
 	} else {
@@ -239,7 +291,7 @@ if($phone !== null) {
 					echo '<b>'.MP::x($lng['password_hash_invalid']).'</b><br>';
 					echo Themes::bodyEnd();
 					die;
-				} elseif(strpos($e->getMessage(), 'AUTH_RESTART') !== false/* || strpos($e->getMessage(), 'I\'m not waiting') !== false*/) {
+				} elseif(strpos($e->getMessage(), 'AUTH_RESTART') !== false) {
 				} else {
 					echo '<xmp>';
 					echo $e;
@@ -280,13 +332,6 @@ if($phone !== null) {
 					} elseif(isset($a['_']) && $a['_'] === 'account.needSignup') {
 						htmlStart();
 						echo MP::x($lng['need_signup']);
-						//echo '<form action="signin.php"';
-						//if($post) echo ' method="post"';
-						//echo '>';
-						//echo 'First name:<br><input type="text" name="first"><br>';
-						//echo 'Last name:<br><input type="text" name="last">';
-						//echo '<input type="submit">';
-						//echo '</form>';
 						echo Themes::bodyEnd();
 						die;
 					} else {
@@ -370,30 +415,39 @@ if($phone !== null) {
 } else {
 	// ввод телефона
 	htmlStart();
-	//if($revoked) {
-	//	echo MP::x('<b>Ваша сессия истекла!</b><br>');
-	//}
-	//if(isset($_GET['asd']) || $ipass || true) {
-	echo MP::x($lng['phone_number']).':<br>';
+	echo '<div class="login-box">';
+	if($revoked) {
+		echo '<div class="login-error">'.MP::x($lng['session_expired']).'</div>';
+	}
+	echo '<div class="login-methods">';
+	echo '<div class="phone-login">';
+	echo '<h2>'.MP::x($lng['phone_number']).'</h2>';
 	echo '<form action="login.php"';
 	if($post) echo ' method="post"';
-	echo '>';
-	echo '<input type="text" value="" name="phone">';
-	echo '<input type="submit">';
+	echo ' class="login-form">';
+	echo '<input type="text" class="login-input" placeholder="+1234567890" name="phone">';
 	if($ipass !== null)
 		echo '<input type="hidden" name="ipass" value="'.$ipass.'">';
+	echo '<button type="submit" class="login-button">'.MP::x($lng['continue']).'</button>';
 	echo '</form>';
-	if($wrong) {
-		echo '<b>'.MP::x($lng['wrong_number_format']).'</b><br>';
-	} else {
-	//	echo '<a href="qrlogin.php">'.MP::x($lng['qr_login']).'</a> (experimental)';
-	}
-	echo '<br><div>';
-	echo '<a href="about.php">'.MP::x($lng['about']).'</a> <a href="login.php?lang=en">English</a> <a href="login.php?lang=ru">'.MP::x('Русский').'</a>';
-	//echo ' <a href="sets.php">'.$lng['settings'].'</a>';
 	echo '</div>';
-	//} else {
-	//	echo "This instance is closed. Consider hosting your own: <br>https://github.com/shinovon/mpgram-web<br><p><small style=\"color: grey\"><small><small>or type login.php?asd in the url if only you understand the risks</small></small></small></p>";
-	//}
+	
+	echo '<div class="qr-login">';
+	echo '<h2>'.MP::x($lng['qr_login']).'</h2>';
+	echo '<a href="qrlogin.php" class="qr-button">'.MP::x($lng['scan_qr']).'</a>';
+	echo '</div>';
+	echo '</div>';
+	
+	if($wrong) {
+		echo '<div class="login-error">'.MP::x($lng['wrong_number_format']).'</div>';
+	}
+	echo '</div>';
+	
+	echo '<div class="login-footer">';
+	echo '<a href="about.php">'.MP::x($lng['about']).'</a>';
+	echo ' <a href="login.php?lang=en">English</a>';
+	echo ' <a href="login.php?lang=ru">'.MP::x('Русский').'</a>';
+	echo '</div>';
+	echo '</div>';
 	echo Themes::bodyEnd();
 }

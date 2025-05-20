@@ -129,5 +129,9 @@
 	"anonymous_poll": "Anonymous Poll",
 	"poll": "Poll",
 	"closed_poll": "Poll results",
-	"no_votes": "No votes"
+	"no_votes": "No votes",
+	"welcome_text": "Your secure gateway to Telegram",
+	"continue": "Continue",
+	"scan_qr": "Scan QR code with Telegram mobile app",
+	"session_expired": "Your session has expired. Please login again."
 }
