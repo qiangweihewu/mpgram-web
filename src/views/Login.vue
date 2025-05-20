@@ -48,16 +48,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 const { t, locale } = useI18n()
 const router = useRouter()
+const authStore = useAuthStore()
+
 const phone = ref('')
 const showQR = ref(false)
 const qrCode = ref('')
-const error = ref('')
+
+const error = computed(() => authStore.error)
 
 const setLocale = (lang) => {
   locale.value = lang
@@ -65,36 +69,12 @@ const setLocale = (lang) => {
 
 const handlePhoneLogin = async () => {
   try {
-    error.value = '' // Clear any previous errors
-    
-    const res = await fetch('/api/login.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        phone: phone.value
-      })
-    })
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`)
-    }
-
-    const contentType = res.headers.get('content-type')
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Server did not return JSON')
-    }
-
-    const data = await res.json()
-    if (data.success) {
+    await authStore.login(phone.value)
+    if (authStore.isAuthenticated) {
       router.push('/chat')
-    } else if (data.error) {
-      error.value = data.error
     }
   } catch (err) {
     console.error('Login error:', err)
-    error.value = t('login_error') || 'An error occurred during login'
   }
 }
 </script>
