@@ -41,6 +41,7 @@
 
     <div class="login-footer">
       <a href="/about">{{ $t('about') }}</a>
+      <a @click="setLocale('zh')">中文</a>
       <a @click="setLocale('en')">English</a>
       <a @click="setLocale('ru')">Русский</a>
     </div>
