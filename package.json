@@ -9,8 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@chillerlan/php-qrcode": "^5.0.0",
-    "danog/madelineproto": "^8.0.0"
   },
   "devDependencies": {
     "vite": "^5.0.0"
