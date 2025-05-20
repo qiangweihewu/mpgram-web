@@ -48,7 +48,7 @@ function htmlStart() {
 	echo '<html><head><title>'.MP::x($lng['login']).'</title>';
 	echo '<link rel="icon" type="image/x-icon" href="favicon.ico">';
 	echo Themes::head();
-	// определение часового пояса
+	// 定义时区
 	$iev = MP::getIEVersion();
 	if($iev == 0 || $iev > 4) {
 		$dtz = new DateTimeZone(date_default_timezone_get());
