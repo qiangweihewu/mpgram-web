@@ -32,6 +32,8 @@ const messages = {
 }
 
 export default createI18n({
+  legacy: false,
+  globalInjection: true,
   locale: 'en',
   fallbackLocale: 'en',
   messages
